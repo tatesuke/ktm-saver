@@ -15,8 +15,11 @@
     "url": "https://github.com/tatesuke/ktm-saver/issues"
   },
   "homepage": "https://github.com/tatesuke/ktm-saver#readme",
-  "bin": { "ktmsaver": "index.js" },
+  "bin": {
+    "ktmsaver": "index.js"
+  },
   "dependencies": {
+    "forever": "^0.15.1",
     "websocket.io": "^0.2.1"
   },
   "preferGlobal": true
