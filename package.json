@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/tatesuke/ktm-saver#readme",
   "bin": {
-    "ktmsaver": "launch.js"
+    "ktmsaver": "bin/launch.js"
   },
   "dependencies": {
     "forever": "^0.15.1",
