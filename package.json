@@ -16,9 +16,10 @@
   },
   "homepage": "https://github.com/tatesuke/ktm-saver#readme",
   "bin": {
-    "ktmsaver": "index.js"
+    "ktmsaver": "launch.js"
   },
   "dependencies": {
+    "forever": "^0.15.1",
     "websocket.io": "^0.2.1"
   }
 }
