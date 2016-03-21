@@ -11,6 +11,7 @@ console.log("listening on port " + port);
 
 var path = require('path');
 var sourceDir = path.dirname(process.argv[1]);
+process.chdir(sourceDir);
 
 var forever = require('forever');
-forever.startDaemon('ktmsaver.js', {args:[port], sourceDir:sourceDir});
+forever.startDaemon('ktmsaver.js', {args:[port]});
