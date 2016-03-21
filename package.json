@@ -15,6 +15,5 @@
     "url": "https://github.com/tatesuke/ktm-saver/issues"
   },
   "homepage": "https://github.com/tatesuke/ktm-saver#readme",
-  "preferGlobal": true,
-  "bin":{"ktmsaver": "index.js"}
+  "bin": "index.js"
 }
