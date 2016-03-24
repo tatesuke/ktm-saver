@@ -50,16 +50,16 @@
         }
     }
     document.body.removeEventListener("keydown", originalShrtcutKeyEvent);
-    
+
     // 新しいkeydownイベントを定義
     document.body.addEventListener("keydown", function(event) {
         var code = (event.keyCode ? event.keyCode : event.which);
 
         if (!isDrawMode() && (code == 83) && (event.ctrlKey || event.metaKey)) {
-        	// CTRL+Sのみ新しい処理に書き換える
-        	event.preventDefault();
-            if (!saved || filePath == "") {
-            	queueOverwriteSave();
+            // CTRL+Sのみ新しい処理に書き換える
+            event.preventDefault();
+            if (!saved || filePath === "") {
+                queueOverwriteSave();
             }
             return false;
         } else {
@@ -74,11 +74,11 @@
             baseButton = document.querySelector("#onlineMenuButton");
         }
 
-        /* 上書き設定ボタン */
+        /* 保存メニューボタン */
         var ktmSaverMenuButton = document.createElement("button");
-        ktmSaverMenuButton.innerHTML = "上書き設定";
+        ktmSaverMenuButton.innerHTML = "KTMSaverメニュー";
         ktmSaverMenuButton.style.height = baseButton.offsetHeight;
-        ktmSaverMenuButton.style.position = "absolute"
+        ktmSaverMenuButton.style.position = "absolute";
         ktmSaverMenuButton.style.top = baseButton.offsetTop + "px";
         ktmSaverMenuButton.style.left = (baseButton.offsetLeft + baseButton.offsetWidth) + "px";
         on(ktmSaverMenuButton, "click", function() {
@@ -90,18 +90,44 @@
         });
         document.body.appendChild(ktmSaverMenuButton);
 
-        /* 上書き設定メニュー */
+        /* 保存メニュー */
         var ktmSaverMenu = document.createElement("div");
         ktmSaverMenu.classList.add("popupMenu");
         ktmSaverMenu.id  = "ktmSaverMenu";
         ktmSaverMenu.innerHTML =
-            '<li>ポート番号:<input type="text" id="ktmServerPort" value="' + getKtmSaverPort() + '">' +
-            '<button id="cliseKtmSaverMenuButton">閉じる</button></li>';
+            '<ul>' + 
+            '<li><a href="#" id="ktmSaverOverwriteSaveButton">上書き保存</a></li>' +
+            '<li><a href="#" id="ktmSaverSaveAsButton">名前を付けて保存</a></li>' +
+            '<li><hr></li>' + 
+            '<li>クライアントAppポート番号:<input type="text" id="ktmServerPort" value="' + getItem("ktmServerPort", "56565") + '"></li>' +
+            '<li><hr></li>' + 
+            '<li><input type="checkbox" id="ktmServerBackupEnabled" ' + getItem("ktmServerBackupEnabled", "checked") + '>' + 
+            '<label for="ktmServerBackupEnabled">上書きするときにファイルをバックアップ</label></li>' +
+            '<li>バックアップ保存先:<input type="text" id="ktmBackupDir" value="' + getItem("ktmBackupDir", "./") + '"></li>' +
+            '<li>バックアップ世代数:<input type="number" id="ktmBackupGeneration" min="0" value="' + getItem("ktmBackupGeneration", "0") + '">' +
+            '(0以下で無制限)</li>' +
+            '<li><button id="cliseKtmSaverMenuButton">閉じる</button></li>' +
+            '</ul>';
         document.body.appendChild(ktmSaverMenu);
 
-        on("#ktmServerPort", "change", function() {
-            localStorage.setItem("com.tatesuke.ktmsaver.port", this.value);
+        on("#ktmSaverSaveAsButton", "click", function(){
+            queueSaveAs();
         });
+
+        on("#ktmSaverOverwriteSaveButton", "click", function(){
+            queueOverwriteSave();
+        });
+
+        on("#ktmServerPort, #ktmBackupDir, #ktmBackupGeneration", "change", function() {
+            console.log(this.id + " " + this.value);
+            setItem(this.id, this.value);
+        });
+
+        on ("#ktmServerBackupEnabled", "change", function() {
+             console.log(this.id + " " + this.value);
+            setItem(this.id, (this.cheked) ? "cheked" : "");
+        });
+
         on("#cliseKtmSaverMenuButton", "click", function() {
             hide(ktmSaverMenu);
         });
@@ -114,7 +140,7 @@
         connectingMessage.style.height = (baseButton.offsetHeight - 2) + "px";
         connectingMessage.style.position = "absolute";
         connectingMessage.style.top = 0;
-        connectingMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px"
+        connectingMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px";
         connectingMessage.style.textAlign = "center";
         connectingMessage.style.color = "#c09853";
         connectingMessage.style.backgroundColor = "#fcf8e3";
@@ -130,7 +156,7 @@
         savingMessage.style.height = (baseButton.offsetHeight - 2) + "px";
         savingMessage.style.position = "absolute";
         savingMessage.style.top = 0;
-        savingMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px"
+        savingMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px";
         savingMessage.style.textAlign = "center";
         savingMessage.style.color = "#c09853";
         savingMessage.style.backgroundColor = "#fcf8e3";
@@ -146,7 +172,7 @@
         sucessMessage.style.height = (baseButton.offsetHeight - 2) + "px";
         sucessMessage.style.position = "absolute";
         sucessMessage.style.top = 0;
-        sucessMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px"
+        sucessMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px";
         sucessMessage.style.textAlign = "center";
         sucessMessage.style.color = "#3a87ad";
         sucessMessage.style.backgroundColor = "#d9edf7";
@@ -162,7 +188,7 @@
         errorMessage.style.height = (baseButton.offsetHeight - 2) + "px";
         errorMessage.style.position = "absolute";
         errorMessage.style.top = 0;
-        errorMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px"
+        errorMessage.style.left = ((document.body.offsetWidth / 2) - (150 / 2)) + "px";
         errorMessage.style.textAlign = "center";
         errorMessage.style.color = "#b94a48";
         errorMessage.style.backgroundColor = "#f2dede";
@@ -171,19 +197,47 @@
         document.body.appendChild(errorMessage);
     }
 
-    function getKtmSaverPort() {
-        var port = localStorage.getItem("com.tatesuke.ktmsaver.port");
-        if (!port) {
-            port = "56565";
-        }
-        return port;
+    function getItem(name, defaultValue) {
+        var value = localStorage.getItem("com.tatesuke.ktmsaver." + name);
+        return (value) ? value : defaultValue;
     }
 
+    function setItem(name, value) {
+        localStorage.setItem("com.tatesuke.ktmsaver." + name, value);
+    }
+
+    // 名前を付けて保存
+    var saveAsQueue = null;
+    var clearMessageQueue = null;
+    var queueWait = 50; 
+    function queueSaveAs() {
+        clearTimeout(saveAsQueue);
+        clearTimeout(clearMessageQueue);
+        overwriteSaveQueue = setTimeout(doSaveAs, queueWait);
+    }
+    function doSaveAs () {
+        var html = getHTMLForSave();
+        hide(document.querySelector("#ktmSaverSuccessMessage"));
+        hide(document.querySelector("#ktmSaverErrorMessage"));
+        showBlock(document.querySelector("#ktmSaverConnectingMessage"));
+
+        var title = "無題";
+        var titleElement = document.querySelector("h1");
+        if (titleElement) {
+            title = titleElement.innerText;
+        }
+
+        var data = {};
+        data.action = "SAVE_AS";
+        data.fileDir = null;
+        data.fileName = title + ".html";
+        data.content = html;
+
+        doSave(data);
+    }
 
     // 上書き保存
     var overwriteSaveQueue = null;
-    var clearMessageQueue = null;
-    var queueWait = 50; 
     function queueOverwriteSave() {
         clearTimeout(overwriteSaveQueue);
         clearTimeout(clearMessageQueue);
@@ -197,27 +251,21 @@
         hide(document.querySelector("#ktmSaverErrorMessage"));
         showBlock(document.querySelector("#ktmSaverConnectingMessage"));
 
-        var data = {};
         if (filePath == "") {
-            var title = "無題";
-            var titleElement = document.querySelector("h1");
-            if (titleElement) {
-                title = titleElement.innerText;
-            }
-
-            data.action = "SAVE_AS";
-            data.fileDir = null;
-            data.fileName = title + ".html";
-            data.content = html;
+            doSaveAs();
         } else {
+            var data = {};
             var pos = filePath.lastIndexOf("/");
             pos = (pos == -1) ? filePath.lastIndexOf("\\") : pos;
             data.action = "OVERWRITE";
             data.fileDir = filePath.substring(0, pos);
             data.fileName = filePath.substr(pos);
             data.content = html;
+            doSave(data);
         }
+    }
 
+    function doSave(data) {
         var port = getKtmSaverPort();
         var ws = new WebSocket('ws://localhost:' + port + '/save');
         ws.onopen = function() {
@@ -229,7 +277,7 @@
         ws.onmessage = function(event) {
             hide(document.querySelector("#ktmSaverSavinggMessage"));
             var result = JSON.parse(event.data);
-            
+
             if (!result.result) {
                 showBlock(document.querySelector("#ktmSaverErrorMessage"));
                 alert("保存に失敗した可能性があります" + result.message);
