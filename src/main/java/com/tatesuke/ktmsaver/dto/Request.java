@@ -1,7 +1,5 @@
 package com.tatesuke.ktmsaver.dto;
 
-import net.arnx.jsonic.JSON;
-
 public class Request {
 
 	public String action;
