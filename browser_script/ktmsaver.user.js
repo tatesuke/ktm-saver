@@ -96,15 +96,15 @@
         ktmSaverMenu.id  = "ktmSaverMenu";
         ktmSaverMenu.innerHTML =
             '<ul>' + 
-            '<li><a href="#" id="ktmSaverOverwriteSaveButton">上書き保存</a></li>' +
+            '<li><a href="#" id="ktmSaverOverwriteSaveButton">上書き保存(Ctrl + S)</a></li>' +
             '<li><a href="#" id="ktmSaverSaveAsButton">名前を付けて保存</a></li>' +
             '<li><hr></li>' + 
-            '<li>クライアントAppポート番号:<input type="text" id="ktmServerPort" value="' + getItem("ktmServerPort", "56565") + '"></li>' +
+            '<li>クライアントAppポート番号:<input type="text" id="ktmSaverPort" value="' + getItem("ktmSaverPort", "56565") + '"></li>' +
             '<li><hr></li>' + 
-            '<li><input type="checkbox" id="ktmServerBackupEnabled" ' + getItem("ktmServerBackupEnabled", "checked") + '>' + 
-            '<label for="ktmServerBackupEnabled">上書きするときにファイルをバックアップ</label></li>' +
-            '<li>バックアップ保存先:<input type="text" id="ktmBackupDir" value="' + getItem("ktmBackupDir", "./") + '"></li>' +
-            '<li>バックアップ世代数:<input type="number" id="ktmBackupGeneration" min="0" value="' + getItem("ktmBackupGeneration", "0") + '">' +
+            '<li><input type="checkbox" id="ktmSaverBackupEnabled" ' + getItem("ktmSaverBackupEnabled", "checked") + '>' + 
+            '<label for="ktmSaverBackupEnabled">上書きするときにファイルをバックアップ</label></li>' +
+            '<li>バックアップ保存先:<input type="text" id="ktmSaverBackupDir" value="' + getItem("ktmSaverBackupDir", "./") + '"></li>' +
+            '<li>バックアップ世代数:<input type="number" id="ktmSaverBackupGeneration" min="0" value="' + getItem("ktmSaverBackupGeneration", "0") + '">' +
             '(0以下で無制限)</li>' +
             '<li><button id="cliseKtmSaverMenuButton">閉じる</button></li>' +
             '</ul>';
@@ -118,13 +118,11 @@
             queueOverwriteSave();
         });
 
-        on("#ktmServerPort, #ktmBackupDir, #ktmBackupGeneration", "change", function() {
-            console.log(this.id + " " + this.value);
+        on("#ktmSaverPort, #ktmSaverBackupDir, #ktmSaverBackupGeneration", "change", function() {
             setItem(this.id, this.value);
         });
 
-        on ("#ktmServerBackupEnabled", "change", function() {
-             console.log(this.id + " " + this.value);
+        on ("#ktmSaverBackupEnabled", "change", function() {
             setItem(this.id, (this.cheked) ? "cheked" : "");
         });
 
@@ -228,11 +226,14 @@
         }
 
         var data = {};
-        data.action = "SAVE_AS";
-        data.fileDir = null;
+        data.action   = "SAVE_AS";
+        data.fileDir  = null;
         data.fileName = title + ".html";
-        data.content = html;
-
+        data.content  = html;
+        data.backupEnabled = document.querySelector("#ktmSaverBackupEnabled").checked; 
+        data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
+        data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
+        
         doSave(data);
     }
 
@@ -261,12 +262,15 @@
             data.fileDir = filePath.substring(0, pos);
             data.fileName = filePath.substr(pos);
             data.content = html;
+            data.backupEnabled = document.querySelector("#ktmSaverBackupEnabled").checked; 
+            data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
+            data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
             doSave(data);
         }
     }
 
     function doSave(data) {
-        var port = getKtmSaverPort();
+        var port = getItem("ktmSaverPort");
         var ws = new WebSocket('ws://localhost:' + port + '/save');
         ws.onopen = function() {
             hide(document.querySelector("#ktmSaverConnectingMessage"));
