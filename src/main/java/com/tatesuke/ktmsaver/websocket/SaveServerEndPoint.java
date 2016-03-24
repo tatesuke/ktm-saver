@@ -25,8 +25,11 @@ public class SaveServerEndPoint {
 
 	@OnMessage
 	public String onMessage(String message, Session session) {
+		String result;
 		try {
 			Request request = JSON.decode(message, Request.class);
+			
+			System.out.println("receive\t" + request);
 			
 			Response response;
 			switch (request.action) {
@@ -42,18 +45,18 @@ public class SaveServerEndPoint {
 				response.message = "unknown action " + request.action;
 			}
 	
-			String result = JSON.encode(response);
-			System.out.println(result);
-			return result;
+			result = JSON.encode(response);
 		} catch (Exception e) {
+			e.printStackTrace();
+			
 			Response response = new Response();
 			response.result = Response.Result.ERROR;
 			response.message = e.getMessage();
 			
-			String result = JSON.encode(response);
-			System.out.println(result);
-			return result;
+			result = JSON.encode(response);
 		}
 		
+		System.out.println("return\t" + result);
+		return result;
 	}
 }
