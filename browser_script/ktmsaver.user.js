@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ktmSaverForBrowser
 // @namespace    https://github.com/tatesuke/ktmsaver
-// @version      0.3
+// @version      0.4
 // @description  かんたんMarkdownで上書きを可能にするためのユーザスクリプト
 // @author       tatesuke
 // @match        http://tatesuke.github.io/KanTanMarkdown/**
@@ -26,7 +26,7 @@
     // ファイルパス取得
     var url = location.href;
     var filePath;
-    setFilePath((url.match(/^file:\/\/\//)) ? decodeURIComponent(url.substr(8)) : "")
+    setFilePath((url.match(/^file:\/\/\//)) ? decodeURIComponent(url.substr(8)) : "");
     function setFilePath(path) {
         if (path) {
             filePath = path;
@@ -40,29 +40,31 @@
     // UIを構築
     showKtmSaverUI();
 
-    // オリジナルのkeydownイベントを退避させる
-    var originalEventListener;
+    // 保存ボタンとCtrl+Sのオリジナルのイベントを退避させる
+    var originalShrtcutKeyEvent;
     for (var i = 0; i < eventListeners.length; i++) {
         var el = eventListeners[i];
         if ((el.element == document.body) && (el.eventName == "keydown")) {
-            originalEventListener = el.callback;
+            originalShrtcutKeyEvent = el.callback;
             break;
         }
     }
-    document.body.removeEventListener("keydown", originalEventListener);
-
+    document.body.removeEventListener("keydown", originalShrtcutKeyEvent);
+    
     // 新しいkeydownイベントを定義
     document.body.addEventListener("keydown", function(event) {
         var code = (event.keyCode ? event.keyCode : event.which);
 
         if (!isDrawMode() && (code == 83) && (event.ctrlKey || event.metaKey)) {
-            // CTRL+Sのみ新しい処理に書き換える
-            event.preventDefault();
-            queueOverwriteSave();
+        	// CTRL+Sのみ新しい処理に書き換える
+        	event.preventDefault();
+            if (!saved || filePath == "") {
+            	queueOverwriteSave();
+            }
             return false;
         } else {
-            // CTRL+Sはオリジナルそのまま使う
-            originalEventListener(event);
+            // CTRL+S以外はオリジナルそのまま使う
+            return originalShrtcutKeyEvent(event);
         }
     });
 
@@ -245,13 +247,13 @@
                 doPreview();
             } else if (result.result == "ERROR") {
                 showBlock(document.querySelector("#ktmSaverErrorMessage"));
-                alert(data.filePath + "の保存に失敗しました。\n" + result.message);
+                alert("保存に失敗しました。\n" + result.message);
                 setFilePath(filePath);
                 saved = false;
                 doPreview();
             } else {
                 showBlock(document.querySelector("#ktmSaverErrorMessage"));
-                alert("保存に失敗した可能性があります" + result.message);
+                alert("保存に失敗した可能性があります。\n" + result.message);
                 saved = false;
                 doPreview();
             }
