@@ -7,8 +7,11 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
+
+import org.glassfish.tyrus.server.Server;
 
 /**
  * トレイアイコン。
@@ -19,7 +22,8 @@ public class KTMTrayIcon {
 
 	private TrayIcon trayIcon;
 	private Observer observer;
-
+	private MenuItem portNumberMenu;
+	
 	public KTMTrayIcon(Observer observer) {
 		this.observer = observer;
 	}
@@ -36,6 +40,15 @@ public class KTMTrayIcon {
 			this.trayIcon = new TrayIcon(image);
 			
 	        PopupMenu menu = new PopupMenu();
+	        
+	        String version = this.getClass().getPackage().getImplementationVersion();
+	        
+	        MenuItem versionItem = new MenuItem("KTMSaver version " + version);
+	        menu.add(versionItem);
+	        
+	        portNumberMenu = new MenuItem();
+	        menu.add(portNumberMenu);
+	        
 	        MenuItem exitItem = new MenuItem("終了");
 	        exitItem.addActionListener((e)-> {
 	        	this.onExit();
@@ -58,6 +71,11 @@ public class KTMTrayIcon {
 
 	public void showErrorMessage(String message) {
 		trayIcon.displayMessage("KTMSaver", message, TrayIcon.MessageType.ERROR);		
+	}
+
+	public void setPort(String port) {
+		portNumberMenu.setLabel("lisning on port " + port);
+		
 	}
 
 }

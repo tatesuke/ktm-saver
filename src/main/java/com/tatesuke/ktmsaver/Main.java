@@ -31,6 +31,7 @@ public class Main implements KTMTrayIcon.Observer {
 			server = new Server("localhost", Integer.parseInt(port), "/", null,
 					SaveServerEndPoint.class);
 			server.start();
+			trayIcon.setPort(port);
 		} catch (Exception e) {
 			e.printStackTrace();
 
@@ -43,7 +44,6 @@ public class Main implements KTMTrayIcon.Observer {
 					onExit();
 				}
 			}, 3000);
-
 		}
 	}
 
