@@ -3,14 +3,19 @@ package com.tatesuke.ktmsaver;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.glassfish.tyrus.server.Server;
+import javax.websocket.server.ServerContainer;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.tatesuke.ktmsaver.ui.KTMTrayIcon;
 import com.tatesuke.ktmsaver.websocket.SaveServerEndPoint;
 
 /**
- * KTMSaverのメイン関数
- * サーバーを起動して、トレイアイコンを表示する。
+ * KTMSaverのメイン関数 サーバーを起動して、トレイアイコンを表示する。
+ * 
  * @author tatesuke
  */
 public class Main implements KTMTrayIcon.Observer {
@@ -20,7 +25,7 @@ public class Main implements KTMTrayIcon.Observer {
 	}
 
 	private Server server;
-
+	
 	private void launch(String[] args) {
 		String port = (1 <= args.length) ? args[0] : "56565";
 
@@ -28,11 +33,32 @@ public class Main implements KTMTrayIcon.Observer {
 		trayIcon.show();
 
 		try {
-			server = new Server("localhost", Integer.parseInt(port), "/", null,
-					SaveServerEndPoint.class);
+			server = new Server();
+			ServerConnector connector = new ServerConnector(server);
+			connector.setPort(Integer.parseInt(port));
+			connector.setHost("127.0.0.1");
+			server.addConnector(connector);
+
+			// Setup the basic application "context" for this application at "/"
+			// This is also known as the handler tree (in jetty speak)
+			ServletContextHandler context = new ServletContextHandler(
+					ServletContextHandler.SESSIONS);
+			context.setContextPath("/ktmsaver");
+			server.setHandler(context);
+
+			// Initialize javax.websocket layer
+			ServerContainer wscontainer = WebSocketServerContainerInitializer
+					.configureContext(context);
+
+			// Add WebSocket endpoint to javax.websocket layer
+			wscontainer.addEndpoint(SaveServerEndPoint.class);
+			wscontainer.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
+			
 			server.start();
+			server.dump(System.err);
+			
 			trayIcon.setPort(port);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 
 			trayIcon.showErrorMessage("The server has not started.\n"
@@ -49,8 +75,12 @@ public class Main implements KTMTrayIcon.Observer {
 
 	@Override
 	public void onExit() {
-		server.stop();
+		try {
+			server.stop();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		System.exit(0);
-	};
+	}
 
 }
