@@ -39,18 +39,13 @@ public class Main implements KTMTrayIcon.Observer {
 			connector.setHost("127.0.0.1");
 			server.addConnector(connector);
 
-			// Setup the basic application "context" for this application at "/"
-			// This is also known as the handler tree (in jetty speak)
 			ServletContextHandler context = new ServletContextHandler(
 					ServletContextHandler.SESSIONS);
 			context.setContextPath("/ktmsaver");
 			server.setHandler(context);
 
-			// Initialize javax.websocket layer
 			ServerContainer wscontainer = WebSocketServerContainerInitializer
 					.configureContext(context);
-
-			// Add WebSocket endpoint to javax.websocket layer
 			wscontainer.addEndpoint(SaveServerEndPoint.class);
 			wscontainer.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
 			
