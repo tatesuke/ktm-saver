@@ -1,5 +1,8 @@
 package com.tatesuke.ktmsaver.websocket;
 
+import java.io.IOException;
+
+import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
@@ -18,7 +21,7 @@ import com.tatesuke.ktmsaver.service.SaveService;
 public class SaveServerEndPoint {
 
 	private SaveService service = getService();
-
+	
 	protected SaveService getService() {
 		return new SaveService();
 	}
@@ -59,4 +62,16 @@ public class SaveServerEndPoint {
 		System.out.println("return\t" + result);
 		return result;
 	}
+	
+	@OnError
+	public void onWebSocketError(Throwable cause, Session session) throws IOException{
+		cause.printStackTrace();
+		Response response = new Response();
+		response.result = Response.Result.ERROR;
+		response.message = "unknown error\n" + cause.getMessage();
+		session.getBasicRemote().sendText(JSON.encode(response));
+		session.close();
+    }
+	
+	
 }
