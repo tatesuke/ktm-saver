@@ -7,11 +7,8 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.imageio.ImageIO;
-
-import org.glassfish.tyrus.server.Server;
 
 /**
  * トレイアイコン。
