@@ -211,6 +211,7 @@ public class SaveService {
 	public void endSave(Response response) throws IOException {
 		if (fileOutputStream != null) {
 			fileOutputStream.close();
+			fileOutputStream = null;
 		}
 
 		if (file != null) {

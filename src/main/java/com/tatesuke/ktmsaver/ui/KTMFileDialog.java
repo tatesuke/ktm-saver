@@ -18,7 +18,8 @@ public class KTMFileDialog {
 
 	private JFrame frame;
 	private JFileChooser dialog;
-
+	private int selected;
+	
 	public KTMFileDialog() {
 		try {
 			UIManager
@@ -77,18 +78,13 @@ public class KTMFileDialog {
 
 				frame.setVisible(true);
 				frame.setAlwaysOnTop(true);
-				dialog.showSaveDialog(frame);
+				selected = dialog.showSaveDialog(frame);
 				frame.setVisible(false);
 			}
 		});
-
-		while (frame.isVisible()) {
-			Thread.sleep(50);
-		}
-
-		File file = dialog.getSelectedFile();
-
-		if (file != null) {
+		
+		if (selected == JFileChooser.APPROVE_OPTION) {
+			File file = dialog.getSelectedFile();
 			String ext = getExtension(file.getName());
 			if (ext == null) {
 				file = new File(file.getParentFile(), file.getName() + ".html");
