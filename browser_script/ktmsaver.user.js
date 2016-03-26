@@ -40,7 +40,18 @@
         }
     }
 
-    // 保存ボタンとCtrl+Sのオリジナルのイベントを退避させる
+    // 保存ボタンとショートカットキーのオリジナルのイベントを退避させる
+    var saveButton = document.querySelector("#saveButton");
+    var originalSaveButtonEvent;
+    for (var i = 0; i < eventListeners.length; i++) {
+        var el = eventListeners[i];
+        if ((el.element == saveButton) && (el.eventName == "click")) {
+            originalSaveButtonEvent = el.callback;
+            break;
+        }
+    }
+    saveButton.removeEventListener("click", originalSaveButtonEvent);
+
     var originalShrtcutKeyEvent;
     for (var i = 0; i < eventListeners.length; i++) {
         var el = eventListeners[i];
@@ -51,16 +62,35 @@
     }
     document.body.removeEventListener("keydown", originalShrtcutKeyEvent);
 
-    // 新しいkeydownイベントを定義
-    document.body.addEventListener("keydown", function(event) {
+    // 新しい保存ボタンクリックイベント
+    var isSaveButtonUsed = false;
+    on(saveButton, "click", function(){
+        var confirm = window.confirm(
+            "保存ボタンで保存を実行した場合、新しいファイルパスを得ることができないため、\n" +
+            "ファイルを開きなおすまでCtrl+Sによる上書き保存はできなくなります。\n\n" +
+            "「Ctrl+,」で表示されるメニューから「名前を付けて保存」を選択すればこの問題は発生しません。\n\n" + 
+            "それでもこのボタンから実行しますか？");
+        if (confirm == true) {
+            isSaveButtonUsed = true;
+            showKTMSaverMessage("WARN", "上書き保存利用不可");
+            return originalSaveButtonEvent();
+        }
+    });
+
+    // 新しいショートカットキーイベントを定義
+    on(document.body, "keydown", function(event) {
         var code = (event.keyCode ? event.keyCode : event.which);
 
         if (!isDrawMode() && (code == 83) && (event.ctrlKey || event.metaKey)) {
             // CTRL+Sのみ新しい処理に書き換える
             event.preventDefault();
-            if (!saved || filePath === "") {
+
+            if (isSaveButtonUsed) {
+                return originalSaveButtonEvent();
+            } else if (!saved || filePath === "") {
                 queueOverwriteSave();
             }
+
             return false;
         } 
 
@@ -96,11 +126,6 @@
     });
 
     function showKtmSaverUI() {
-        var baseButton = document.querySelector("#settingMenuButton");
-        if (!baseButton) {
-            baseButton = document.querySelector("#onlineMenuButton");
-        }
-
         /* KTMSaverメニュー */
         var ktmSaverMenu = document.createElement("div");
         ktmSaverMenu.classList.add("popupMenu");
@@ -189,9 +214,8 @@
 
         // 表示
         document.body.appendChild(messageElement);
-        messageElement.style.left = "0px";
-        messageElement.style.top = (window.innerHeight - messageElement.offsetHeight - 2) + "px";
-        
+        layoutKTMSaverMessage();
+
         // timeが渡ってきていれば非表示タイマーセット
         if (time) {
             var clearMessageQueue = setTimeout(function() {
@@ -199,6 +223,19 @@
             }, time);
         }
     }
+
+    function layoutKTMSaverMessage() {
+        var elements = document.querySelectorAll(".ktmSavarMessage");
+        for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            element.style.left = "0px";
+            element.style.top = (window.innerHeight - element.offsetHeight - 2) + "px";
+        }
+    }
+
+    on(window, "resize", function() {
+        layoutKTMSaverMessage();
+    });
 
     // 保存用WebSocket
     var port = document.querySelector("#ktmSaverPort").value;
@@ -211,8 +248,6 @@
 
     ws.onerror = function(e) {
         showKTMSaverMessage("WARN", "!上書き保存は利用できません。設定は「Ctrl+,」!");
-        saved = false;
-        doPreview();
     };
 
     window.onbeforeunload = function() {
@@ -233,6 +268,7 @@
     }
     function doSaveAs () {
         showKTMSaverMessage("WARN", "HTML生成中...");
+
         var html = getHTMLForSave();
 
         var title = "無題";
@@ -262,6 +298,7 @@
 
     function doOverwriteSave() {
         showKTMSaverMessage("WARN", "HTML生成中...");
+
         var html = getHTMLForSave();
 
         if (filePath == "") {
