@@ -76,20 +76,18 @@ public class SaveService {
 	 */
 	public void startSaveAs(Request request) throws InvocationTargetException,
 			InterruptedException, IOException {
-		synchronized (this) {
-			// ファイルダイアログの表示
-			File baseDir = (request.fileDir == null) ? null : new File(
-					request.fileDir);
-			String fileName = request.fileName;
-			file = dialog.getFile(baseDir, fileName);
+		// ファイルダイアログの表示
+		File baseDir = (request.fileDir == null) ? null : new File(
+				request.fileDir);
+		String fileName = request.fileName;
+		file = dialog.getFile(baseDir, fileName);
 
-			// ファイルに応じた処理
-			if (file != null) {
-				if (request.backupEnabled == true) {
-					backup(file, request.backupDir, request.backupGeneration);
-				}
-				fileOutputStream = new FileOutputStream(file);
+		// ファイルに応じた処理
+		if (file != null) {
+			if (request.backupEnabled == true) {
+				backup(file, request.backupDir, request.backupGeneration);
 			}
+			fileOutputStream = new FileOutputStream(file);
 		}
 	}
 
@@ -132,27 +130,25 @@ public class SaveService {
 	 */
 	public void startOverwriteSave(Request request)
 			throws FileNotFoundException {
-		synchronized (this) {
-			file = new File(request.fileDir, request.fileName);
+		file = new File(request.fileDir, request.fileName);
 
-			if (request.backupEnabled == true) {
-				backup(file, request.backupDir, request.backupGeneration);
-			}
-
-			fileOutputStream = new FileOutputStream(file);
+		if (request.backupEnabled == true) {
+			backup(file, request.backupDir, request.backupGeneration);
 		}
+
+		fileOutputStream = new FileOutputStream(file);
 	}
 
 	private void backup(File file, String backupDirPath, int backupGeneration) {
 		if (!file.isFile()) {
 			return;
 		}
-		
+
 		File backupDir = new File(backupDirPath);
 		if (!backupDir.isAbsolute()) {
 			backupDir = new File(file.getParentFile(), backupDirPath);
 		}
-	
+
 		if (!backupDir.isDirectory()) {
 			boolean mkdirs = backupDir.mkdirs();
 			if (mkdirs == false) {
@@ -202,33 +198,29 @@ public class SaveService {
 	}
 
 	public void append(byte[] data) throws IOException {
-		synchronized (this) {
-			if (fileOutputStream != null) {
-				try {
-					fileOutputStream.write(data);
-				} catch (IOException e) {
-					fileOutputStream.close();
-					throw (IOException) e.fillInStackTrace();
-				}
+		if (fileOutputStream != null) {
+			try {
+				fileOutputStream.write(data);
+			} catch (IOException e) {
+				fileOutputStream.close();
+				throw (IOException) e.fillInStackTrace();
 			}
 		}
 	}
 
 	public void endSave(Response response) throws IOException {
-		synchronized (this) {
-			if (fileOutputStream != null) {
-				fileOutputStream.close();
-			}
-			
-			if (file != null) {
-				response.result = Response.Result.SUCCESS;
-				response.filePath = file.getCanonicalPath();
-				response.message = null;
-			} else {
-				response.result = Response.Result.CANCEL;
-				response.filePath = null;
-				response.message = null;
-			}
+		if (fileOutputStream != null) {
+			fileOutputStream.close();
+		}
+
+		if (file != null) {
+			response.result = Response.Result.SUCCESS;
+			response.filePath = file.getCanonicalPath();
+			response.message = null;
+		} else {
+			response.result = Response.Result.CANCEL;
+			response.filePath = null;
+			response.message = null;
 		}
 	}
 }
