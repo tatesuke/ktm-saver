@@ -33,10 +33,10 @@ public class KTMFileDialog {
 		frame.setTitle("KTMSaver Save As...");
 		JLabel label = new JLabel("showing KTM savedialog...");
 		frame.add(label);
-		 frame.setUndecorated(true);
+		frame.setUndecorated(true);
 		frame.pack();
-		dialog = new FileDialog(frame, "Save As...", FileDialog.SAVE);
-		
+		dialog = new FileDialog(frame, "KTM Save As...", FileDialog.SAVE);
+
 		pointerInfo = MouseInfo.getPointerInfo();
 		try {
 			robot = new Robot();
@@ -70,29 +70,29 @@ public class KTMFileDialog {
 				if (baseDir != null) {
 					dialog.setDirectory(baseDir.getAbsolutePath());
 				}
-				
+
 				dialog.setFile(name);
-				
+
 				frame.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowOpened(WindowEvent e) {
 						if (robot == null) {
 							return;
 						}
-						
+
 						int orgX = pointerInfo.getLocation().x;
 						int orgY = pointerInfo.getLocation().y;
-						
+
 						Rectangle r = e.getWindow().getBounds();
 						int x = r.x + (r.width / 2);
 						int y = r.y + (r.height / 2);
-						
+
 						robot.mouseMove(x, y);
 						robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 						robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 						robot.mouseMove(orgX, orgY);
 					}
-					
+
 					@Override
 					public void windowActivated(WindowEvent e) {
 						dialog.setVisible(true);
@@ -103,11 +103,11 @@ public class KTMFileDialog {
 				frame.setAlwaysOnTop(true);
 			}
 		});
-		
+
 		while (frame.isVisible()) {
 			Thread.sleep(50);
 		}
-		
+
 		String dir = dialog.getDirectory();
 		String file = dialog.getFile();
 

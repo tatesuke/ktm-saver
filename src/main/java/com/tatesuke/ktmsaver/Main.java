@@ -48,7 +48,7 @@ public class Main implements KTMTrayIcon.Observer {
 					.configureContext(context);
 			wscontainer.addEndpoint(SaveServerEndPoint.class);
 			wscontainer.setDefaultMaxBinaryMessageBufferSize(256 * 1024);
-			// wscontainer.setDefaultMaxSessionIdleTimeout(5000);
+			wscontainer.setDefaultMaxSessionIdleTimeout(3 * 60 * 1000);
 
 			server.start();
 			server.dump(System.err);
