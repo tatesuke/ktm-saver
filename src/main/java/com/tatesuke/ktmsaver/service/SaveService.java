@@ -81,7 +81,7 @@ public class SaveService {
 			File baseDir = (request.fileDir == null) ? null : new File(
 					request.fileDir);
 			String fileName = request.fileName;
-			file = dialog.getFile(baseDir, fileName).getCanonicalFile();
+			file = dialog.getFile(baseDir, fileName);
 
 			// ファイルに応じた処理
 			if (file != null) {
@@ -219,10 +219,16 @@ public class SaveService {
 			if (fileOutputStream != null) {
 				fileOutputStream.close();
 			}
-
-			response.result = Response.Result.SUCCESS;
-			response.filePath = file.getCanonicalPath();
-			response.message = null;
+			
+			if (file != null) {
+				response.result = Response.Result.SUCCESS;
+				response.filePath = file.getCanonicalPath();
+				response.message = null;
+			} else {
+				response.result = Response.Result.CANCEL;
+				response.filePath = null;
+				response.message = null;
+			}
 		}
 	}
 }
