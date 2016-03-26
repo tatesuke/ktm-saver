@@ -1,20 +1,13 @@
 package com.tatesuke.ktmsaver.ui;
 
-import java.awt.AWTException;
-import java.awt.FileDialog;
-import java.awt.MouseInfo;
-import java.awt.PointerInfo;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.event.InputEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * ファイル保存ダイアログ
@@ -23,26 +16,37 @@ import javax.swing.SwingUtilities;
  */
 public class KTMFileDialog {
 
-	private Robot robot;
-	private PointerInfo pointerInfo;
 	private JFrame frame;
-	private FileDialog dialog;
+	private JFileChooser dialog;
 
 	public KTMFileDialog() {
+		try {
+			UIManager
+					.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+		} catch (Exception e) {
+			// 握りつぶし
+		}
+		try {
+			UIManager
+					.setLookAndFeel("apple.laf.AquaLookAndFeel");
+		} catch (Exception e) {
+			// 握りつぶし
+		}
+		try {
+			UIManager
+					.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) {
+			// 握りつぶし
+		}
+
 		frame = new JFrame();
 		frame.setTitle("KTMSaver Save As...");
 		JLabel label = new JLabel("showing KTM savedialog...");
 		frame.add(label);
 		frame.setUndecorated(true);
 		frame.pack();
-		dialog = new FileDialog(frame, "KTM Save As...", FileDialog.SAVE);
 
-		pointerInfo = MouseInfo.getPointerInfo();
-		try {
-			robot = new Robot();
-		} catch (AWTException e) {
-			e.printStackTrace();
-		}
+		dialog = new JFileChooser();
 	}
 
 	/**
@@ -68,40 +72,13 @@ public class KTMFileDialog {
 			@Override
 			public void run() {
 				if (baseDir != null) {
-					dialog.setDirectory(baseDir.getAbsolutePath());
+					dialog.setCurrentDirectory(baseDir);
 				}
 
-				dialog.setFile(name);
-
-				frame.addWindowListener(new WindowAdapter() {
-					@Override
-					public void windowOpened(WindowEvent e) {
-						if (robot == null) {
-							return;
-						}
-
-						int orgX = pointerInfo.getLocation().x;
-						int orgY = pointerInfo.getLocation().y;
-
-						Rectangle r = e.getWindow().getBounds();
-						int x = r.x + (r.width / 2);
-						int y = r.y + (r.height / 2);
-
-						robot.mouseMove(x, y);
-						robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-						robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-						robot.mouseMove(orgX, orgY);
-					}
-
-					@Override
-					public void windowActivated(WindowEvent e) {
-						dialog.setVisible(true);
-						frame.setVisible(false);
-						frame.removeWindowListener(this);
-					}
-				});
 				frame.setVisible(true);
 				frame.setAlwaysOnTop(true);
+				dialog.showSaveDialog(frame);
+				frame.setVisible(false);
 			}
 		});
 
@@ -109,20 +86,16 @@ public class KTMFileDialog {
 			Thread.sleep(50);
 		}
 
-		String dir = dialog.getDirectory();
-		String file = dialog.getFile();
+		File file = dialog.getSelectedFile();
 
 		if (file != null) {
-			String ext = getExtension(file);
+			String ext = getExtension(file.getName());
 			if (ext == null) {
-				file = file + ".html";
+				file = new File(file.getParentFile(), file.getName() + ".html");
 			}
-		}
-
-		if (dir == null) {
-			return null;
+			return file;
 		} else {
-			return new File(dir, file);
+			return null;
 		}
 	}
 
