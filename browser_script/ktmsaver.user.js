@@ -66,8 +66,7 @@
     var isSaveButtonUsed = false;
     on(saveButton, "click", function(){
         var confirm = window.confirm(
-            "保存ボタンで保存を実行した場合、新しいファイルパスを得ることができないため、\n" +
-            "ファイルを開きなおすまでCtrl+Sによる上書き保存はできなくなります。\n\n" +
+            "保存ボタンで保存を実行した場合、新しいファイルパスを取得することができないため、ファイルを開きなおすまでCtrl+Sによる上書き保存はできなくなります。\n" +
             "「Ctrl+,」で表示されるメニューから「名前を付けて保存」を選択すればこの問題は発生しません。\n\n" + 
             "それでもこのボタンから実行しますか？");
         if (confirm == true) {
@@ -150,10 +149,12 @@
 
         on("#ktmSaverSaveAsButton", "click", function(){
             queueSaveAs();
+            return false;
         });
 
         on("#ktmSaverOverwriteSaveButton", "click", function(){
             queueOverwriteSave();
+            return false;
         });
 
         on("#ktmSaverPort, #ktmSaverBackupDir, #ktmSaverBackupGeneration", "change", function() {
@@ -218,7 +219,7 @@
 
         // timeが渡ってきていれば非表示タイマーセット
         if (time) {
-            var clearMessageQueue = setTimeout(function() {
+            setTimeout(function() {
                 messageElement.style.display="none";
             }, time);
         }
@@ -259,12 +260,10 @@
 
     // 名前を付けて保存
     var saveAsQueue = null;
-    var clearMessageQueue = null;
     var queueWait = 1; 
     function queueSaveAs() {
         clearTimeout(saveAsQueue);
-        clearTimeout(clearMessageQueue);
-        overwriteSaveQueue = setTimeout(doSaveAs, queueWait);
+        saveAsQueue = setTimeout(doSaveAs, queueWait);
     }
     function doSaveAs () {
         showKTMSaverMessage("WARN", "HTML生成中...");
@@ -292,7 +291,6 @@
     var overwriteSaveQueue = null;
     function queueOverwriteSave() {
         clearTimeout(overwriteSaveQueue);
-        clearTimeout(clearMessageQueue);
         overwriteSaveQueue = setTimeout(doOverwriteSave, queueWait);
     }
 
