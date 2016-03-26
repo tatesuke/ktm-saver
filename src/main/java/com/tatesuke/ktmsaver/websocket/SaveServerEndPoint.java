@@ -31,7 +31,7 @@ public class SaveServerEndPoint {
 
 	private Request request;
 	private boolean isReceiving = false;
-	
+
 	@OnMessage
 	public void onMessage(String message, Session session) {
 		synchronized (this) {

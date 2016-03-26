@@ -15,6 +15,7 @@ public class Request {
 		return "{\"action\":\"" + action + "\",\"fileDir\":\"" + fileDir
 				+ "\",\"fileName\":\"" + fileName + "\",\"content\":" + "***"
 				+ ",\"backupEnabled\":" + backupEnabled + ",\"backupDir\":\""
-				+ backupDir + "\",\"backupGeneration\":" + backupGeneration + "}";
+				+ backupDir + "\",\"backupGeneration\":" + backupGeneration
+				+ "}";
 	}
 }

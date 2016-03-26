@@ -25,7 +25,7 @@ public class Main implements KTMTrayIcon.Observer {
 	}
 
 	private Server server;
-	
+
 	private void launch(String[] args) {
 		String port = (1 <= args.length) ? args[0] : "56565";
 
@@ -43,17 +43,16 @@ public class Main implements KTMTrayIcon.Observer {
 					ServletContextHandler.SESSIONS);
 			context.setContextPath("/ktmsaver");
 			server.setHandler(context);
-			
-			
+
 			ServerContainer wscontainer = WebSocketServerContainerInitializer
 					.configureContext(context);
 			wscontainer.addEndpoint(SaveServerEndPoint.class);
-			wscontainer.setDefaultMaxBinaryMessageBufferSize(256*1024);
-//			wscontainer.setDefaultMaxSessionIdleTimeout(5000);
-			
+			wscontainer.setDefaultMaxBinaryMessageBufferSize(256 * 1024);
+			// wscontainer.setDefaultMaxSessionIdleTimeout(5000);
+
 			server.start();
 			server.dump(System.err);
-			
+
 			trayIcon.setPort(port);
 		} catch (Throwable e) {
 			e.printStackTrace();

@@ -11,8 +11,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 /**
- * トレイアイコン。
- * ユーザに起動していることを知らせる、起動失敗を知らせる、アプリケーション終了させる役割。
+ * トレイアイコン。 ユーザに起動していることを知らせる、起動失敗を知らせる、アプリケーション終了させる役割。
+ * 
  * @author tatesuke
  */
 public class KTMTrayIcon {
@@ -20,7 +20,7 @@ public class KTMTrayIcon {
 	private TrayIcon trayIcon;
 	private Observer observer;
 	private MenuItem portNumberMenu;
-	
+
 	public KTMTrayIcon(Observer observer) {
 		this.observer = observer;
 	}
@@ -32,27 +32,27 @@ public class KTMTrayIcon {
 	public void show() {
 		try {
 			Image image = ImageIO.read(Thread.currentThread()
-					.getContextClassLoader()
-					.getResourceAsStream("ktm.png"));
+					.getContextClassLoader().getResourceAsStream("ktm.png"));
 			this.trayIcon = new TrayIcon(image);
-			
-	        PopupMenu menu = new PopupMenu();
-	        
-	        String version = this.getClass().getPackage().getImplementationVersion();
-	        
-	        MenuItem versionItem = new MenuItem("KTMSaver version " + version);
-	        menu.add(versionItem);
-	        
-	        portNumberMenu = new MenuItem();
-	        menu.add(portNumberMenu);
-	        
-	        MenuItem exitItem = new MenuItem("終了");
-	        exitItem.addActionListener((e)-> {
-	        	this.onExit();
-	        });
-	        menu.add(exitItem);
-	        trayIcon.setPopupMenu(menu);
-			
+
+			PopupMenu menu = new PopupMenu();
+
+			String version = this.getClass().getPackage()
+					.getImplementationVersion();
+
+			MenuItem versionItem = new MenuItem("KTMSaver version " + version);
+			menu.add(versionItem);
+
+			portNumberMenu = new MenuItem();
+			menu.add(portNumberMenu);
+
+			MenuItem exitItem = new MenuItem("終了");
+			exitItem.addActionListener((e) -> {
+				this.onExit();
+			});
+			menu.add(exitItem);
+			trayIcon.setPopupMenu(menu);
+
 			SystemTray.getSystemTray().add(trayIcon);
 		} catch (AWTException e) {
 			e.printStackTrace();
@@ -67,12 +67,12 @@ public class KTMTrayIcon {
 	}
 
 	public void showErrorMessage(String message) {
-		trayIcon.displayMessage("KTMSaver", message, TrayIcon.MessageType.ERROR);		
+		trayIcon.displayMessage("KTMSaver", message, TrayIcon.MessageType.ERROR);
 	}
 
 	public void setPort(String port) {
 		portNumberMenu.setLabel("lisning on port " + port);
-		
+
 	}
 
 }
