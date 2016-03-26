@@ -1,6 +1,7 @@
 package com.tatesuke.ktmsaver.websocket;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -33,8 +34,11 @@ public class SaveServerEndPoint {
 	@OnMessage
 	public void onMessage(String message, Session session) {
 		try {
+			if (request != null) {
+				throw new IllegalStateException("想定外の順番でメッセージを受信した");
+			}
 			this.request = JSON.decode(message, Request.class);
-			System.out.println("receive\t" + request);
+			System.out.println(new Date() + "\treceive\t" + request);
 		} catch (Exception e) {
 			try {
 				e.printStackTrace();
@@ -42,7 +46,7 @@ public class SaveServerEndPoint {
 				response.result = Response.Result.ERROR;
 				response.message = e.getMessage();
 				String result = JSON.encode(response);
-				System.out.println("return\t" + result);
+				System.out.println(new Date() + "\treturn\t" + result);
 				session.getBasicRemote().sendText(result);
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -66,7 +70,7 @@ public class SaveServerEndPoint {
 					response.result = Response.Result.ERROR;
 					response.message = "unknown action " + request.action;
 					String result = JSON.encode(response);
-					System.out.println("return\t" + result);
+					System.out.println(new Date() + "\treturn\t" + result);
 					session.getBasicRemote().sendText(result);
 					session.close();
 				}
@@ -77,9 +81,10 @@ public class SaveServerEndPoint {
 			if (isLast) {
 				service.endSave(response);
 				String result = JSON.encode(response);
-				System.out.println(result);
+				System.out.println(new Date() + "\treturn\t" + result);
 				session.getBasicRemote().sendText(result);
-				session.close();
+				request = null;
+				response = null;
 			}
 		} catch (Exception e) {
 			try {
@@ -89,7 +94,7 @@ public class SaveServerEndPoint {
 				response.result = Response.Result.ERROR;
 				response.message = e.getMessage();
 				String result = JSON.encode(response);
-				System.out.println("return\t" + result);
+				System.out.println(new Date() + "\treturn\t" + result);
 				session.getBasicRemote().sendText(result);
 				session.close();
 			} catch (IOException e1) {
@@ -104,8 +109,10 @@ public class SaveServerEndPoint {
 		cause.printStackTrace();
 		Response response = new Response();
 		response.result = Response.Result.ERROR;
+		String result = JSON.encode(response);
 		response.message = "unknown error\n" + cause.getMessage();
-		session.getBasicRemote().sendText(JSON.encode(response));
+		System.out.println(new Date() + "\treturn\t" + result);
+		session.getBasicRemote().sendText(result);
 		session.close();
 	}
 
