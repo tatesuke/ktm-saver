@@ -74,9 +74,9 @@
             baseButton = document.querySelector("#onlineMenuButton");
         }
 
-        /* 保存メニューボタン */
+        /* KTMSaverボタン */
         var ktmSaverMenuButton = document.createElement("button");
-        ktmSaverMenuButton.innerHTML = "KTMSaverメニュー";
+        ktmSaverMenuButton.innerHTML = "KTMSaver";
         ktmSaverMenuButton.style.height = baseButton.offsetHeight;
         ktmSaverMenuButton.style.position = "absolute";
         ktmSaverMenuButton.style.top = baseButton.offsetTop + "px";
@@ -90,7 +90,7 @@
         });
         document.body.appendChild(ktmSaverMenuButton);
 
-        /* 保存メニュー */
+        /* KTMSaverメニュー */
         var ktmSaverMenu = document.createElement("div");
         ktmSaverMenu.classList.add("popupMenu");
         ktmSaverMenu.id  = "ktmSaverMenu";
@@ -229,11 +229,10 @@
         data.action   = "SAVE_AS";
         data.fileDir  = null;
         data.fileName = title + ".html";
-        data.content  = html;
         data.backupEnabled = document.querySelector("#ktmSaverBackupEnabled").checked; 
         data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
         data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
-        
+
         doSave(data);
     }
 
@@ -260,22 +259,24 @@
             pos = (pos == -1) ? filePath.lastIndexOf("\\") : pos;
             data.action = "OVERWRITE";
             data.fileDir = filePath.substring(0, pos);
-            data.fileName = filePath.substr(pos);
-            data.content = html;
+            data.fileName = filePath.substr(pos + 1);
             data.backupEnabled = document.querySelector("#ktmSaverBackupEnabled").checked; 
             data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
             data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
+
             doSave(data);
         }
     }
 
     function doSave(data) {
-        var port = getItem("ktmSaverPort");
-        var ws = new WebSocket('ws://localhost:' + port + '/save');
+        var port = document.querySelector("#ktmSaverPort").value;
+        var ws = new WebSocket('ws://localhost:' + port + '/ktmsaver/save');
         ws.onopen = function() {
             hide(document.querySelector("#ktmSaverConnectingMessage"));
             showBlock(document.querySelector("#ktmSaverSavinggMessage"));
+
             ws.send(JSON.stringify(data));
+            ws.send(str2buff(getHTMLForSave()));
         };
 
         ws.onmessage = function(event) {
@@ -316,10 +317,41 @@
             hide(document.querySelector("#ktmSaverConnectingMessage"));
             hide(document.querySelector("#ktmSaverSavinggMessage"));
             showBlock(document.querySelector("#ktmSaverErrorMessage"));
-            alert("保存に失敗しました。");
+            alert("保存に失敗しました。クライアントAppとの接続中にエラーが発生しました。\n" +
+                  "クライアントAppが起動しているか、ポート番号があっているかなど確認してください。");
             saved = false;
             doPreview();
         };
     }
 
-})();
+    var str2buff = function(str){
+        var ab_ = new ArrayBuffer(new Blob([str]).size);
+        var bytes_ = new Uint8Array(ab_);
+
+        var n = str.length,
+            idx = -1,
+            i, c;
+
+        for(i = 0; i < n; ++i){
+            c = str.charCodeAt(i);
+            if(c <= 0x7F){
+                bytes_[++idx] = c;
+            } else if(c <= 0x7FF){
+                bytes_[++idx] = 0xC0 | (c >>> 6);
+                bytes_[++idx] = 0x80 | (c & 0x3F);
+            } else if(c <= 0xFFFF){
+                bytes_[++idx] = 0xE0 | (c >>> 12);
+                bytes_[++idx] = 0x80 | ((c >>> 6) & 0x3F);
+                bytes_[++idx] = 0x80 | (c & 0x3F);
+            } else {
+                bytes_[++idx] = 0xF0 | (c >>> 18);
+                bytes_[++idx] = 0x80 | ((c >>> 12) & 0x3F);
+                bytes_[++idx] = 0x80 | ((c >>> 6) & 0x3F);
+                bytes_[++idx] = 0x80 | (c & 0x3F);
+            }
+        }
+        return bytes_;
+    }
+
+
+    })();
