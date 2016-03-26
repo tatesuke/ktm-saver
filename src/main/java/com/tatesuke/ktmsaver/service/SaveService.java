@@ -1,8 +1,10 @@
 package com.tatesuke.ktmsaver.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +26,9 @@ public class SaveService {
 	protected KTMFileDialog getKTMFileDialog() {
 		return new KTMFileDialog();
 	}
+
+	FileOutputStream fileOutputStream;
+	File file;
 
 	/**
 	 * 新規保存。
@@ -64,35 +69,27 @@ public class SaveService {
 	 *         <li>response.filePath = null
 	 *         <li>response.message = エラーメッセージ
 	 *         </ul>
+	 * @throws InterruptedException
+	 * @throws InvocationTargetException
+	 * @throws IOException
 	 * 
 	 */
-	public Response saveAs(Request request) {
+	public void startSaveAs(Request request) throws InvocationTargetException,
+			InterruptedException, IOException {
 		synchronized (this) {
-			Response response = new Response();
+			// ファイルダイアログの表示
+			File baseDir = (request.fileDir == null) ? null : new File(
+					request.fileDir);
+			String fileName = request.fileName;
+			file = dialog.getFile(baseDir, fileName).getCanonicalFile();
 
-			File file = null;
-			try {
-				File baseDir = (request.fileDir == null) ? null : new File(
-						request.fileDir);
-				String fileName = request.fileName;
-				file = dialog.getFile(baseDir, fileName);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-				response.result = Response.Result.ERROR;
-				response.filePath = null;
-				response.message = e1.getMessage();
-				return response;
+			// ファイルに応じた処理
+			if (file != null) {
+				if (request.backupEnabled == true) {
+					backup(file, request.backupDir, request.backupGeneration);
+				}
+				fileOutputStream = new FileOutputStream(file);
 			}
-
-			if (file == null) {
-				response.result = Response.Result.CANCEL;
-				response.filePath = null;
-				response.message = null;
-			} else {
-				save(request, response, file);
-			}
-
-			return response;
 		}
 	}
 
@@ -130,46 +127,32 @@ public class SaveService {
 	 *         <li>response.filePath = null
 	 *         <li>response.message = エラーメッセージ
 	 *         </ul>
+	 * @throws FileNotFoundException
 	 * 
 	 */
-	public Response overwrite(Request request) {
+	public void startOverwriteSave(Request request)
+			throws FileNotFoundException {
 		synchronized (this) {
-			Response response = new Response();
+			file = new File(request.fileDir, request.fileName);
 
-			File file = new File(request.fileDir, request.fileName);
-			save(request, response, file);
-
-			return response;
-		}
-	}
-
-	private void save(Request request, Response response, File file) {
-		if (request.backupEnabled == true) {
-			File baseDir = new File(request.backupDir);
-			if (!baseDir.isAbsolute()) {
-				baseDir = new File(file.getParentFile(), request.backupDir);
+			if (request.backupEnabled == true) {
+				backup(file, request.backupDir, request.backupGeneration);
 			}
-			backup(file, baseDir, request.backupGeneration);
-		}
-		try (FileOutputStream fo = new FileOutputStream(file)) {
-			byte[] bytes = request.content.getBytes("utf-8");
-			fo.write(bytes);
 
-			response.result = Response.Result.SUCCESS;
-			response.filePath = file.getAbsolutePath();
-			response.message = null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			response.result = Response.Result.ERROR;
-			response.filePath = null;
-			response.message = e.getMessage();
+			fileOutputStream = new FileOutputStream(file);
 		}
 	}
 
-	private void backup(File file, File backupDir, int backupGeneration) {
+	private void backup(File file, String backupDirPath, int backupGeneration) {
 		if (!file.isFile()) {
 			return;
 		}
+		
+		File backupDir = new File(backupDirPath);
+		if (!backupDir.isAbsolute()) {
+			backupDir = new File(file.getParentFile(), backupDirPath);
+		}
+	
 		if (!backupDir.isDirectory()) {
 			boolean mkdirs = backupDir.mkdirs();
 			if (mkdirs == false) {
@@ -184,7 +167,8 @@ public class SaveService {
 				.filter(f -> {
 					String afterName = f.getName().substring(
 							file.getName().length());
-					return afterName.matches("\\." + BACKUPFILE_SYNBOL + "[1-9][0-9]*");
+					return afterName.matches("\\." + BACKUPFILE_SYNBOL
+							+ "[1-9][0-9]*");
 				}).sorted((f1, f2) -> {
 					int n1 = getFileNumber(file, f1);
 					int n2 = getFileNumber(file, f2);
@@ -215,5 +199,30 @@ public class SaveService {
 		String afterName = file.getName().substring(nameLength);
 		String numberStr = afterName.substring(BACKUPFILE_SYNBOL.length() + 1);
 		return Integer.parseInt(numberStr);
+	}
+
+	public void append(byte[] data) throws IOException {
+		synchronized (this) {
+			if (fileOutputStream != null) {
+				try {
+					fileOutputStream.write(data);
+				} catch (IOException e) {
+					fileOutputStream.close();
+					throw (IOException) e.fillInStackTrace();
+				}
+			}
+		}
+	}
+
+	public void endSave(Response response) throws IOException {
+		synchronized (this) {
+			if (fileOutputStream != null) {
+				fileOutputStream.close();
+			}
+
+			response.result = Response.Result.SUCCESS;
+			response.filePath = file.getCanonicalPath();
+			response.message = null;
+		}
 	}
 }

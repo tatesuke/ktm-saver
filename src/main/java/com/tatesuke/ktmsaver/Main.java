@@ -43,11 +43,13 @@ public class Main implements KTMTrayIcon.Observer {
 					ServletContextHandler.SESSIONS);
 			context.setContextPath("/ktmsaver");
 			server.setHandler(context);
-
+			
+			
 			ServerContainer wscontainer = WebSocketServerContainerInitializer
 					.configureContext(context);
 			wscontainer.addEndpoint(SaveServerEndPoint.class);
-			wscontainer.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
+			wscontainer.setDefaultMaxBinaryMessageBufferSize(256*1024);
+//			wscontainer.setDefaultMaxSessionIdleTimeout(5000);
 			
 			server.start();
 			server.dump(System.err);
