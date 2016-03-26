@@ -117,8 +117,12 @@ public class SaveServerEndPoint {
 	@OnError
 	public void onWebSocketError(Throwable cause, Session session)
 			throws IOException {
-		cause.printStackTrace();
 		if ((request != null) || !(cause instanceof SocketTimeoutException)) {
+			cause.printStackTrace();
+			
+			request = null;
+			isReceiving = false;
+			
 			Response response = new Response();
 			response.result = Response.Result.ERROR;
 			String result = JSON.encode(response);
