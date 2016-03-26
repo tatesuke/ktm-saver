@@ -97,6 +97,7 @@ public class KTMFileDialog {
 					public void windowActivated(WindowEvent e) {
 						dialog.setVisible(true);
 						frame.setVisible(false);
+						frame.removeWindowListener(this);
 					}
 				});
 				frame.setVisible(true);
