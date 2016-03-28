@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.tatesuke</groupId>
 	<artifactId>ktmsaver</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1</version>
 	<name>ktmsaver</name>
 	<properties>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
@@ -11,7 +11,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<jetty-version>9.2.7.v20150116</jetty-version>
+		<jetty-version>9.3.8.v20160314</jetty-version>
 	</properties>
 	<dependencies>
 		<dependency>
