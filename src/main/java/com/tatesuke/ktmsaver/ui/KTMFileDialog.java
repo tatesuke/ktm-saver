@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * ファイル保存ダイアログ
@@ -19,7 +20,7 @@ public class KTMFileDialog {
 	private JFrame frame;
 	private JFileChooser dialog;
 	private int selected;
-	
+
 	public KTMFileDialog() {
 		try {
 			UIManager
@@ -28,8 +29,7 @@ public class KTMFileDialog {
 			// 握りつぶし
 		}
 		try {
-			UIManager
-					.setLookAndFeel("apple.laf.AquaLookAndFeel");
+			UIManager.setLookAndFeel("apple.laf.AquaLookAndFeel");
 		} catch (Exception e) {
 			// 握りつぶし
 		}
@@ -48,6 +48,18 @@ public class KTMFileDialog {
 		frame.pack();
 
 		dialog = new JFileChooser();
+		dialog.setAcceptAllFileFilterUsed(false);
+		dialog.addChoosableFileFilter(new FileFilter() {
+			@Override
+			public String getDescription() {
+				return "KTM HTML File(.html)";
+			}
+
+			@Override
+			public boolean accept(File f) {
+				return true;
+			}
+		});
 	}
 
 	/**
@@ -82,7 +94,7 @@ public class KTMFileDialog {
 				frame.setVisible(false);
 			}
 		});
-		
+
 		if (selected == JFileChooser.APPROVE_OPTION) {
 			File file = dialog.getSelectedFile();
 			String ext = getExtension(file.getName());
@@ -99,7 +111,7 @@ public class KTMFileDialog {
 		String ext = null;
 		int dotIndex = fileName.lastIndexOf('.');
 
-		if ((dotIndex > 0) && (dotIndex < fileName.length() - 1)) {
+		if ((0 < dotIndex) && (dotIndex < fileName.length() - 1)) {
 			ext = fileName.substring(dotIndex + 1).toLowerCase();
 		}
 
