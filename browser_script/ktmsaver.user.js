@@ -275,7 +275,7 @@
         data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
         data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
 
-        doSave(data);
+        doSave(data, html);
     }
 
     // 上書き保存
@@ -287,8 +287,6 @@
 
     function doOverwriteSave() {
         showKTMSaverMessage("WARN", "HTML生成中...");
-
-        var html = getHTMLForSave();
 
         if (filePath == "") {
             doSaveAs();
@@ -303,20 +301,22 @@
             data.backupDir     = document.querySelector("#ktmSaverBackupDir").value;
             data.backupGeneration = document.querySelector("#ktmSaverBackupGeneration").value;
 
-            doSave(data);
+            var html = getHTMLForSave();
+            
+            doSave(data, html);
         }
     }
 
-    function doSave(data) {
+    function doSave(data, html) {
         if (ws.readyState == WebSocket.OPEN) {
-            // 開始コマンド送信
+            // 送信
             showKTMSaverMessage("WARN", "保存中...");
+            
             ws.onmessage = onmessage;
             ws.send(JSON.stringify(data));
             
-            // データ分割送信
             var size = 256 * 1024;
-            var bytes = str2buff(getHTMLForSave());
+            var bytes = str2buff(html);
             for (var i = 0; i < bytes.length; i += size) {
                 var end = i + size;
                 end = (bytes.length < end) ? bytes.length : end; 
@@ -324,7 +324,6 @@
                 ws.send(sliced);
             }
             
-            // 終了コマンド送信
             ws.send('{"action":"CLOSE"}');
         } else {
             // 切断されていたら再接続
@@ -332,7 +331,7 @@
             port = document.querySelector("#ktmSaverPort").value;
             ws = new WebSocket('ws://localhost:' + port + '/ktmsaver/save');
             ws.onopen = function () {
-                doSave(data);
+                doSave(data, html);
             }
             return;
         }
