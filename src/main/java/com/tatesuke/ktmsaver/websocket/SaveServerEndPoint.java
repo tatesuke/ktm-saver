@@ -84,6 +84,7 @@ public class SaveServerEndPoint {
 	public void onMessage(byte[] data, Session session) {
 		synchronized (this) {
 			try {
+				System.out.println(new Date() + "\treceive\t" + data.length + "byte");
 				service.append(data);
 			} catch (Exception e) {
 				try {
