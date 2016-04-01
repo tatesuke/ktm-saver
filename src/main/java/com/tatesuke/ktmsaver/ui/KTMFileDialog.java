@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
@@ -101,6 +102,18 @@ public class KTMFileDialog {
 			if (ext == null) {
 				file = new File(file.getParentFile(), file.getName() + ".html");
 			}
+			
+			if (file.isDirectory() || file.isFile()) {
+				int option = JOptionPane.showConfirmDialog(null,
+						file.getName() + "は既に存在します。上書きしますか？",
+						"名前を付けて保存の確認",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE);
+				if (option == JOptionPane.NO_OPTION) {
+					file = getFile(file.getParentFile(), file.getName());
+				}
+			}
+			
 			return file;
 		} else {
 			return null;

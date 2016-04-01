@@ -107,7 +107,7 @@ public class SaveServerEndPoint {
 	@OnError
 	public void onWebSocketError(Throwable cause, Session session)
 			throws IOException {
-		if ((!service.isClosed()) || !(cause instanceof SocketTimeoutException)) {
+		if (!service.isClosed() || !(cause instanceof SocketTimeoutException)) {
 			cause.printStackTrace();
 
 			service.close(null);
