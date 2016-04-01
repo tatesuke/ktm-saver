@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ktmSaverForBrowser
 // @namespace    https://github.com/tatesuke/ktmsaver
-// @version      0.9
+// @version      0.10
 // @description  かんたんMarkdownで上書きを可能にするためのユーザスクリプト
 // @author       tatesuke
 // @match        http://tatesuke.github.io/KanTanMarkdown/**
@@ -309,11 +309,22 @@
 
     function doSave(data) {
         if (ws.readyState == WebSocket.OPEN) {
-            // 送信
+            // 開始コマンド送信
             showKTMSaverMessage("WARN", "保存中...");
             ws.onmessage = onmessage;
             ws.send(JSON.stringify(data));
-            ws.send(str2buff(getHTMLForSave()));
+            
+            // データ分割送信
+            var size = 256 * 1024;
+            var bytes = str2buff(getHTMLForSave());
+            for (var i = 0; i < bytes.length; i += size) {
+                var end = i + size;
+                end = (bytes.length < end) ? bytes.length : end; 
+                var sliced = bytes.slice(i, end);
+                ws.send(sliced);
+            }
+            
+            // 終了コマンド送信
             ws.send('{"action":"CLOSE"}');
         } else {
             // 切断されていたら再接続
