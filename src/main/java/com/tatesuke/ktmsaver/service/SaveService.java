@@ -22,6 +22,7 @@ public class SaveService {
 
 	private static final String BACKUPFILE_SYNBOL = "ktmbk";
 	private KTMFileDialog dialog = getKTMFileDialog();
+	private boolean isClosed = false;
 
 	protected KTMFileDialog getKTMFileDialog() {
 		return new KTMFileDialog();
@@ -76,6 +77,16 @@ public class SaveService {
 	 */
 	public void startSaveAs(Request request) throws InvocationTargetException,
 			InterruptedException, IOException {
+		if (request == null) {
+			throw new IllegalArgumentException("request is null");
+		}
+		if (isClosed) {
+			throw new IllegalStateException("already closed.");
+		}
+		if (fileOutputStream != null) {
+			throw new IllegalStateException("already started");
+		}
+
 		// ファイルダイアログの表示
 		File baseDir = (request.fileDir == null) ? null : new File(
 				request.fileDir);
@@ -130,6 +141,13 @@ public class SaveService {
 	 */
 	public void startOverwriteSave(Request request)
 			throws FileNotFoundException {
+		if (request == null) {
+			throw new IllegalArgumentException("request is null");
+		}
+		if (isClosed) {
+			throw new IllegalStateException("already closed.");
+		}
+
 		file = new File(request.fileDir, request.fileName);
 
 		if (request.backupEnabled == true) {
@@ -198,20 +216,32 @@ public class SaveService {
 	}
 
 	public void append(byte[] data) throws IOException {
-		if (fileOutputStream != null) {
-			try {
-				fileOutputStream.write(data);
-			} catch (IOException e) {
-				fileOutputStream.close();
-				throw (IOException) e.fillInStackTrace();
-			}
+		if (data == null) {
+			throw new IllegalArgumentException("data is null");
+		}
+		if (isClosed) {
+			throw new IllegalStateException("already closed.");
+		}
+
+		try {
+			fileOutputStream.write(data);
+		} catch (IOException e) {
+			fileOutputStream.close();
+			fileOutputStream = null;
+			throw (IOException) e.fillInStackTrace();
 		}
 	}
 
-	public void endSave(Response response) throws IOException {
-		if (fileOutputStream != null) {
-			fileOutputStream.close();
-			fileOutputStream = null;
+	public void close(Response response) throws IOException {
+		if (fileOutputStream == null) {
+			throw new IllegalStateException("fileOutputStream is null");
+		}
+
+		fileOutputStream.close();
+		isClosed = true;
+
+		if (response == null) {
+			return;
 		}
 
 		if (file != null) {
@@ -224,4 +254,9 @@ public class SaveService {
 			response.message = null;
 		}
 	}
+
+	public boolean isClosed() {
+		return isClosed;
+	}
+
 }

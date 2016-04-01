@@ -314,6 +314,7 @@
             ws.onmessage = onmessage;
             ws.send(JSON.stringify(data));
             ws.send(str2buff(getHTMLForSave()));
+            ws.send('{"action":"CLOSE"}');
         } else {
             // 切断されていたら再接続
             showKTMSaverMessage("WARN", "再接続中...");    

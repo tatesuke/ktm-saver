@@ -48,7 +48,7 @@ public class Main implements KTMTrayIcon.Observer {
 			ServerContainer wscontainer = WebSocketServerContainerInitializer
 					.configureContext(context);
 			wscontainer.addEndpoint(SaveServerEndPoint.class);
-			wscontainer.setDefaultMaxBinaryMessageBufferSize(256 * 1024);
+			wscontainer.setDefaultMaxBinaryMessageBufferSize(512 * 1024);
 			wscontainer.setDefaultMaxSessionIdleTimeout(10 * 1000);
 			
 			server.start();
