@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.tatesuke</groupId>
 	<artifactId>ktmsaver</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<name>ktmsaver</name>
 	<properties>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>

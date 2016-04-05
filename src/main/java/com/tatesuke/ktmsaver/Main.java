@@ -52,7 +52,6 @@ public class Main implements KTMTrayIcon.Observer {
 			wscontainer.setDefaultMaxSessionIdleTimeout(10 * 1000);
 			
 			server.start();
-			
 			trayIcon.setPort(port);
 		} catch (Throwable e) {
 			e.printStackTrace();

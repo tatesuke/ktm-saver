@@ -28,8 +28,8 @@ public class SaveService {
 		return new KTMFileDialog();
 	}
 
-	FileOutputStream fileOutputStream;
-	File file;
+	private FileOutputStream fileOutputStream;
+	private File file;
 
 	/**
 	 * 新規保存。
@@ -224,7 +224,9 @@ public class SaveService {
 		}
 
 		try {
-			fileOutputStream.write(data);
+			if (fileOutputStream != null) {
+				fileOutputStream.write(data);
+			}
 		} catch (IOException e) {
 			fileOutputStream.close();
 			fileOutputStream = null;
@@ -233,11 +235,10 @@ public class SaveService {
 	}
 
 	public void close(Response response) throws IOException {
-		if (fileOutputStream == null) {
-			throw new IllegalStateException("fileOutputStream is null");
+		if (fileOutputStream != null) {
+			fileOutputStream.close();
 		}
 
-		fileOutputStream.close();
 		isClosed = true;
 
 		if (response == null) {
